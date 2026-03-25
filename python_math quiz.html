@@ -1,0 +1,380 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python & Math Quiz - 100 Questions</title>
+<style>
+:root {
+  --bg-color: #f4f4f9;
+  --text-color: #333;
+  --primary-color: #2575fc;
+  --secondary-color: #6a11cb;
+}
+body.dark {
+  --bg-color: #1c1c1c;
+  --text-color: #fff;
+  --primary-color: #ff416c;
+  --secondary-color: #ff4b2b;
+}
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  transition: 0.3s;
+}
+.container {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 720px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  transition: 0.3s;
+}
+body.dark .container { background-color: #2c2c2c; }
+h1 { margin: 10px 0 20px; color: var(--primary-color); }
+#progress {
+  height: 8px;
+  background: var(--primary-color);
+  border-radius: 4px;
+  margin-bottom: 15px;
+  transition: width 0.3s;
+}
+#score-live {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--secondary-color);
+}
+#question { font-size: 1.25em; margin: 20px 0; line-height: 1.4; }
+#answers button {
+  display: block;
+  margin: 12px auto;
+  padding: 14px 20px;
+  width: 85%;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  background-color: var(--secondary-color);
+  color: white;
+  font-size: 1.05em;
+  transition: all 0.3s;
+}
+#answers button:hover { transform: translateY(-2px); opacity: 0.9; }
+#answers button.correct { background-color: #4caf50; }
+#answers button.wrong { background-color: #f44336; }
+#timer { font-size: 1.2em; font-weight: bold; margin: 10px 0; }
+#timer.low { color: #f44336; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.6} }
+
+button#next-btn, button#restart-btn, button#start-btn, button#mode-btn, button#review-btn, button#back-to-result {
+  padding: 12px 28px;
+  margin: 10px 5px;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: bold;
+  font-size: 1.05em;
+}
+.hide { display: none; }
+#result { text-align: center; }
+#result p { font-size: 1.4em; margin: 20px 0; }
+.confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🚀 Python & Math Quiz</h1>
+  <button id="mode-btn">🌙 Toggle Dark Mode</button>
+
+  <div id="homepage">
+    <br>
+    <label for="question-limit">Number of Questions: </label>
+    <select id="question-limit">
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+      <option value="100" selected>100</option>
+    </select>
+    <button id="start-btn">Start Quiz</button>
+  </div>
+
+  <div id="quiz-container" class="hide">
+    <div id="progress"></div>
+    <div id="score-live">Score: 0 / 0</div>
+    <div id="timer">Time Left: 15s</div>
+    <div id="question"></div>
+    <div id="answers"></div>
+    <button id="next-btn">Next Question →</button>
+  </div>
+  
+  <div id="result" class="hide">
+    <p id="score-text"></p>
+    <button id="review-btn">Review My Answers</button>
+    <button id="restart-btn">Start New Quiz</button>
+  </div>
+
+  <div id="review-section" class="hide">
+    <h2>Review Your Answers</h2>
+    <div id="review-content"></div>
+    <button id="back-to-result">Back to Results</button>
+  </div>
+</div>
+
+<canvas id="confetti" class="confetti hide"></canvas>
+
+<script>
+// ==================== ALL 100 QUESTIONS ====================
+const quizData = [
+  {question: "What is the value of 5 // 2 in Python 3?", answers:["2.5","2","3","Error"], correct:"2"},
+  {question: "What is the output of print(2 ** 3 ** 2) in Python?", answers:["512","64","81","24"], correct:"512"},
+  {question: "In binary, what is the decimal value of 10110₂?", answers:["22","20","24","26"], correct:"22"},
+  {question: "What is the time complexity of accessing an element by index in an array?", answers:["O(n)","O(log n)","O(1)","O(n²)"], correct:"O(1)"},
+  {question: "How many bits are needed to represent the number 255 in binary?", answers:["7","8","9","10"], correct:"8"},
+  {question: "What is 100 % 7?", answers:["2","3","4","5"], correct:"2"},
+  {question: "What does the expression \~5 evaluate to in two's complement (assuming 32-bit integers)?", answers:["-6","-5","5","6"], correct:"-6"},
+  {question: "What is the value of bool([]) in Python?", answers:["True","False","[]","Error"], correct:"False"},
+  {question: "In Big-O notation, which grows fastest?", answers:["O(n log n)","O(n²)","O(2ⁿ)","O(log n)"], correct:"O(2ⁿ)"},
+  {question: "What is the output of print(\"5\" + 3) in JavaScript?", answers:["8","\"53\"","Error","53"], correct:"\"53\""},
+  {question: "17 ÷ 5 = ? (integer division)", answers:["3","4","3.4","2"], correct:"3"},
+  {question: "2024 mod 100 = ?", answers:["24","20","4","0"], correct:"24"},
+  {question: "What is 2³ × 3²?", answers:["72","48","64","81"], correct:"72"},
+  {question: "How many integers from 1 to 100 are divisible by 6?", answers:["16","17","15","18"], correct:"16"},
+  {question: "What is the last digit of 7⁵⁰?", answers:["1","7","9","3"], correct:"7"},
+  {question: "8! = ?", answers:["40320","362880","5040","720"], correct:"40320"},
+  {question: "What is ⌈π⌉ + ⌊π⌋ ?", answers:["6","7","5","3"], correct:"6"},
+  {question: "How many trailing zeros are in 25! ?", answers:["5","6","4","7"], correct:"6"},
+  {question: "What is the greatest common divisor of 48 and 18?", answers:["6","12","3","9"], correct:"6"},
+  {question: "What is the least common multiple of 12 and 18?", answers:["36","72","24","48"], correct:"36"},
+  {question: "How many times does this loop run? for i in range(5,12):", answers:["6","7","5","8"], correct:"7"},
+  {question: "What is the final value of x after x=0; for i in range(4): x+=i ?", answers:["6","10","4","0"], correct:"6"},
+  {question: "How many iterations to sum numbers 1 to 100 using while loop?", answers:["100","101","99","50"], correct:"100"},
+  {question: "What does sum(range(1,11)) equal?", answers:["55","45","65","50"], correct:"55"},
+  {question: "How many numbers from 1 to 50 are even?", answers:["24","25","26","50"], correct:"25"},
+  {question: "What is printed by for i in range(1,10,3): print(i,end=\" \") ?", answers:["1 4 7","1 3 5 7 9","1 4 7 10","0 3 6 9"], correct:"1 4 7"},
+  {question: "After x = 10; while x > 5: x -= 2 -- final value of x?", answers:["4","5","6","10"], correct:"5"},
+  {question: "How many times is "hi" printed? for _ in range(3): for _ in range(2): print(\"hi\")", answers:["5","6","4","9"], correct:"6"},
+  {question: "What is the 10th triangular number? (1+2+…+n)", answers:["45","55","36","66"], correct:"55"},
+  {question: "How many perfect squares ≤ 100?", answers:["10","11","9","12"], correct:"10"},
+  {question: "What is the sum of digits of 2¹⁰?", answers:["10","11","7","13"], correct:"10"},
+  {question: "How many odd numbers between 1 and 99 (inclusive)?", answers:["49","50","51","48"], correct:"50"},
+  {question: "What is the number of terms in the sequence 2, 5, 8, …, 50?", answers:["17","16","18","15"], correct:"17"},
+  {question: "After s=0; for i in range(1,7): s+=i*i -- value of s?", answers:["91","140","49","77"], correct:"91"},
+  {question: "How many times does digit 7 appear in numbers 1 to 100? (careful counting)", answers:["20","19","21","18"], correct:"20"},
+  {question: "What is the worst-case time complexity of bubble sort?", answers:["O(n log n)","O(n²)","O(n)","O(log n)"], correct:"O(n²)"},
+  {question: "Which data structure uses LIFO (Last In First Out)?", answers:["Queue","Stack","List","Set"], correct:"Stack"},
+  {question: "What is the average-case time complexity of quicksort?", answers:["O(n²)","O(n log n)","O(n)","O(log n)"], correct:"O(n log n)"},
+  {question: "How many comparisons does binary search need in the worst case on 1024 elements?", answers:["10","11","9","1024"], correct:"10"},
+  {question: "Which operation is O(1) in a hash table (average case)?", answers:["Insertion","Deletion","Lookup","All of above"], correct:"All of above"},
+  {question: "What is the space complexity of an adjacency matrix for a graph with V vertices?", answers:["O(V)","O(V²)","O(E)","O(V+E)"], correct:"O(V²)"},
+  {question: "Which sorting algorithm is stable by default?", answers:["Quick sort","Heap sort","Merge sort","Selection sort"], correct:"Merge sort"},
+  {question: "In a min-heap, where is the smallest element located?", answers:["Last index","Root","Leaf","Middle"], correct:"Root"},
+  {question: "What is the height of a complete binary tree with 15 nodes?", answers:["3","4","5","2"], correct:"3"},
+  {question: "How many leaves does a full binary tree of height 4 have?", answers:["8","16","15","7"], correct:"16"},
+  {question: "What is the time complexity of finding the median in an unsorted array (best known deterministic)?", answers:["O(n)","O(n log n)","O(n²)","O(log n)"], correct:"O(n)"},
+  {question: "Which data structure supports both min and max in O(1) after O(n) preprocessing?", answers:["Heap","Deque","Two stacks","Not possible"], correct:"Not possible"},
+  {question: "In DFS on a graph, what data structure is typically used?", answers:["Queue","Stack","Priority queue","Set only"], correct:"Stack"},
+  {question: "In BFS, the time complexity when using adjacency list is:", answers:["O(V)","O(V + E)","O(E)","O(V²)"], correct:"O(V + E)"},
+  {question: "What is the maximum number of edges in an undirected simple graph with 10 vertices?", answers:["45","90","100","55"], correct:"45"},
+  {question: "What is the base case usually needed for factorial recursion?", answers:["n == 1","n <= 1","n == 0","Both B & C acceptable"], correct:"Both B & C acceptable"},
+  {question: "How many calls are made in naive recursive Fibonacci for fib(6)?", answers:["13","12","17","Many more"], correct:"13"},
+  {question: "What is fib(0) in most definitions?", answers:["0","1","Error","Undefined"], correct:"0"},
+  {question: "What is the time complexity of naive recursive Fibonacci?", answers:["O(φⁿ)","O(n)","O(n²)","O(log n)"], correct:"O(φⁿ)"},
+  {question: "How many ways to climb 4 stairs taking 1 or 2 steps?", answers:["5","8","3","7"], correct:"5"},
+  {question: "Minimum number of coins (1,5,10) needed to make 17?", answers:["4","3","5","6"], correct:"3"},
+  {question: "How many binary strings of length 5 have no two consecutive 1s?", answers:["8","13","5","21"], correct:"8"},
+  {question: "What is the 6th Catalan number?", answers:["42","14","5","132"], correct:"42"},
+  {question: "What is the recurrence for number of binary search trees with n keys?", answers:["Catalan","Fibonacci","Factorial","2ⁿ"], correct:"Catalan"},
+  {question: "Memoization primarily improves:", answers:["Space","Time","Readability","All equally"], correct:"Time"},
+  {question: "What does n & (n-1) do when n is power of 2?", answers:["0","n","1","n-1"], correct:"0"},
+  {question: "How to check if a number is odd using bitwise?", answers:["n & 1","n | 1","n ^ 1","\~n"], correct:"n & 1"},
+  {question: "What is x ^ x ?", answers:["0","x","1","-x"], correct:"0"},
+  {question: "How to swap two variables without temporary using XOR?", answers:["Possible","Not possible","Only in Python","Only for integers"], correct:"Possible"},
+  {question: "What is the number of set bits in 13 (1101₂)?", answers:["3","2","4","1"], correct:"3"},
+  {question: "What does right shift by 1 do to a positive integer?", answers:["Divide by 2","Multiply by 2","Add 1","Subtract 1"], correct:"Divide by 2"},
+  {question: "What is 10 << 2 ?", answers:["40","5","20","2"], correct:"40"},
+  {question: "How many bits flip when going from 7 to 8?", answers:["3","4","1","2"], correct:"4"},
+  {question: "What is the highest set bit position in 100 (binary 1100100)?", answers:["6","5","7","8"], correct:"6"},
+  {question: "What is n * (n+1) // 2 ?", answers:["Sum 1 to n","n²","n!","2ⁿ"], correct:"Sum 1 to n"},
+  {question: "2¹⁰ = ?", answers:["1024","2048","512","4096"], correct:"1024"},
+  {question: "log₂(65536) = ?", answers:["16","15","17","32"], correct:"16"},
+  {question: "What is 0.1 + 0.2 in floating point (Python/JS)?", answers:["0.3","0.30000000000000004","0.299999999","Error"], correct:"0.30000000000000004"},
+  {question: "How many bytes in 1 KiB?", answers:["1000","1024","512","2048"], correct:"1024"},
+  {question: "What is the ASCII value of 'A'?", answers:["65","97","64","66"], correct:"65"},
+  {question: "In hexadecimal, what is FF₁₆?", answers:["255","256","15","240"], correct:"255"},
+  {question: "What is the value of abs(-7.8) ?", answers:["7","8","7.8","-7.8"], correct:"7.8"},
+  {question: "What is max(3, -1, 9, 0)?", answers:["9","3","0","-1"], correct:"9"},
+  {question: "What is min value of signed 8-bit integer?", answers:["-128","-127","0","-255"], correct:"-128"},
+  {question: "3³ + 4³ + 5³ = ?", answers:["216","1728","6³","1000"], correct:"216"},
+  {question: "What is 100 in binary?", answers:["1100100","1010000","1111111","1000000"], correct:"1100100"},
+  {question: "How many prime numbers ≤ 20?", answers:["8","7","9","10"], correct:"8"},
+  {question: "What is gcd(35, 14)?", answers:["7","5","1","14"], correct:"7"},
+  {question: "9 % 4 = ?", answers:["1","2","3","0"], correct:"1"},
+  {question: "What is 2.0 ** 3 ?", answers:["8.0","6","9","8"], correct:"8.0"},
+  {question: "How many divisors does 36 have?", answers:["9","6","8","12"], correct:"9"},
+  {question: "What is the next power of 2 after 17?", answers:["32","16","64","24"], correct:"32"},
+  {question: "What is floor(17.9)?", answers:["17","18","17.9","16"], correct:"17"},
+  {question: "What is ceil(-3.2)?", answers:["-3","-4","-3.2","-2"], correct:"-3"},
+  {question: "15 & 9 = ? (bitwise AND)", answers:["9","7","1","15"], correct:"9"},
+  {question: "6 | 3 = ? (bitwise OR)", answers:["7","3","6","9"], correct:"7"},
+  {question: "How many bits are set in 255?", answers:["8","7","16","4"], correct:"8"},
+  {question: "What is the value of 10 ^ 6 in bitwise XOR?", answers:["12","14","4","8"], correct:"12"},
+  {question: "What is 100 // 30 ?", answers:["3","4","3.33","2"], correct:"3"},
+  {question: "What is the digital root of 999?", answers:["9","27","18","0"], correct:"9"},
+  {question: "How many perfect cubes from 1 to 1000?", answers:["10","9","11","8"], correct:"10"},
+  {question: "What is 2¹⁶ ?", answers:["65536","32768","131072","10000"], correct:"65536"},
+  {question: "What is the sum of first 10 odd numbers?", answers:["100","121","81","55"], correct:"100"},
+  {question: "In which base is 10 equal to decimal 4?", answers:["Base 3","Base 5","Base 4","Base 2"], correct:"Base 5"},
+  {question: "What is the number of permutations of 5 distinct items?", answers:["120","60","24","5"], correct:"120"}
+];
+
+let currentQuestion = 0;
+let score = 0;
+let questionLimit = 100;
+let timer;
+let timePerQuestion = 15;
+let userAnswers = [];
+
+const homepage = document.getElementById("homepage");
+const questionLimitSelect = document.getElementById("question-limit");
+const startBtn = document.getElementById("start-btn");
+const quizContainer = document.getElementById("quiz-container");
+const progressBar = document.getElementById("progress");
+const scoreLive = document.getElementById("score-live");
+const timerEl = document.getElementById("timer");
+const questionEl = document.getElementById("question");
+const answersEl = document.getElementById("answers");
+const nextBtn = document.getElementById("next-btn");
+
+const resultScreen = document.getElementById("result");
+const scoreText = document.getElementById("score-text");
+const reviewBtn = document.getElementById("review-btn");
+const restartBtn = document.getElementById("restart-btn");
+
+const reviewSection = document.getElementById("review-section");
+const reviewContent = document.getElementById("review-content");
+const backToResult = document.getElementById("back-to-result");
+
+const confettiCanvas = document.getElementById("confetti");
+const ctx = confettiCanvas.getContext("2d");
+
+document.getElementById("mode-btn").addEventListener("click", () => document.body.classList.toggle("dark"));
+
+startBtn.addEventListener("click", () => {
+  questionLimit = parseInt(questionLimitSelect.value);
+  userAnswers = [];
+  currentQuestion = 0;
+  score = 0;
+  homepage.classList.add("hide");
+  quizContainer.classList.remove("hide");
+  loadQuestion();
+});
+
+function loadQuestion() {
+  clearInterval(timer);
+  if (currentQuestion >= questionLimit) {
+    showResult();
+    return;
+  }
+  const q = quizData[currentQuestion];
+  questionEl.textContent = `Q${currentQuestion + 1}: ${q.question}`;
+  const progressPercent = ((currentQuestion) / questionLimit) * 100;
+  progressBar.style.width = `${progressPercent}%`;
+  scoreLive.textContent = `Score: ${score} / ${currentQuestion}`;
+  answersEl.innerHTML = '';
+  const shuffled = [...q.answers].sort(() => Math.random() - 0.5);
+  shuffled.forEach((ans, index) => {
+    const btn = document.createElement("button");
+    btn.textContent = `${index+1}. ${ans}`;
+    btn.addEventListener("click", () => selectAnswer(ans, btn));
+    answersEl.appendChild(btn);
+  });
+  startTimer();
+}
+
+function selectAnswer(selected, btn) {
+  const correct = quizData[currentQuestion].correct;
+  userAnswers[currentQuestion] = selected;
+  if (selected === correct) {
+    score++;
+    btn.classList.add("correct");
+  } else {
+    btn.classList.add("wrong");
+    Array.from(answersEl.children).forEach(b => {
+      if (b.textContent.includes(correct)) b.classList.add("correct");
+    });
+  }
+  Array.from(answersEl.children).forEach(b => b.disabled = true);
+  clearInterval(timer);
+  scoreLive.textContent = `Score: ${score} / ${currentQuestion + 1}`;
+}
+
+function startTimer() {
+  let time = timePerQuestion;
+  timerEl.textContent = `Time Left: ${time}s`;
+  timerEl.classList.remove("low");
+  timer = setInterval(() => {
+    time--;
+    timerEl.textContent = `Time Left: ${time}s`;
+    if (time <= 5) timerEl.classList.add("low");
+    if (time <= 0) {
+      clearInterval(timer);
+      const correct = quizData[currentQuestion].correct;
+      Array.from(answersEl.children).forEach(b => {
+        if (b.textContent.includes(correct)) b.classList.add("correct");
+        b.disabled = true;
+      });
+    }
+  }, 1000);
+}
+
+nextBtn.addEventListener("click", () => {
+  currentQuestion++;
+  loadQuestion();
+});
+
+function showResult() {
+  clearInterval(timer);
+  quizContainer.classList.add("hide");
+  resultScreen.classList.remove("hide");
+  const total = questionLimit;
+  const percentage = Math.round((score / total) * 100);
+  let message = "";
+  if (percentage >= 90) message = "🏆 Outstanding! You're a genius!";
+  else if (percentage >= 80) { message = "🎉 Excellent work!"; triggerConfetti(); }
+  else if (percentage >= 70) message = "👍 Great job!";
+  else if (percentage >= 50) message = "🙂 Not bad! Keep practicing.";
+  else message = "💪 Keep learning! You'll improve next time.";
+  scoreText.innerHTML = `Quiz Completed!<br>Your Score: <strong>${score} / \( {total}</strong> ( \){percentage}%)<br><br>${message}`;
+}
+
+function triggerConfetti() {
+  confettiCanvas.classList.remove("hide");
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+  let particles = [];
+  for(let i = 0; i < 200; i++) {
+    particles.push({
+      x: Math.random() * confettiCanvas.width,
+      y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+      size: Math.random() * 8 + 5,
+      speed: Math.random() * 5 + 3,
+      color: `hsl(${Math.random()*360}, 100%, 60%)`
+    });
+  }
+  function animate() {
+    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    let stillAlive = false;
+    particles.forEach(p => {
+      p.y += p.speed;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+      if (p.y < confettiCanvas.height) s
